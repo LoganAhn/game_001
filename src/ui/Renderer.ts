@@ -7,6 +7,8 @@ import { renderCommunityCards } from './CommunityCardsView';
 import { renderPotDisplay } from './PotView';
 import { createMessageBar, updateMessage } from './MessageView';
 import { BettingControls, BettingDecision } from './BettingControls';
+import { SettingsMenu } from './SettingsMenu';
+import { HandRankingHelp } from './HandRankingHelp';
 import { animationManager } from '../animation/AnimationManager';
 import { animatePotChange } from '../animation/ChipAnimations';
 
@@ -90,6 +92,10 @@ export class Renderer {
 
     // Betting controls
     this.bettingControls = new BettingControls(this.tableWrapper);
+
+    // Settings & Help
+    new SettingsMenu(this.gameContainer);
+    new HandRankingHelp(this.gameContainer);
 
     // Message bar
     this.messageBar = createMessageBar();

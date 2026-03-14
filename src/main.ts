@@ -9,6 +9,7 @@ import { animationManager } from './animation/AnimationManager';
 import { soundManager } from './sound/SoundManager';
 import { playCardDeal, playChipBet, playCheck, playFold, playWin, playAllIn } from './sound/SoundEffects';
 import { showHandPopup } from './animation/WinEffects';
+import { showGameOverScreen } from './ui/GameOverScreen';
 
 // ─── Renderer ───
 const app = document.getElementById('app')!;
@@ -121,19 +122,28 @@ async function gameLoop(): Promise<void> {
 
     if (state.isGameOver) {
       const winner = state.players.find(p => !p.isEliminated);
+      const human = state.players.find(p => !p.isAI);
       playWin();
-      if (winner && !winner.isAI) {
-        renderer.setMessage(`축하합니다! 최종 승리!`);
-      } else {
-        renderer.setMessage(`${winner?.name ?? '???'} 최종 승리! 다시 도전하세요.`);
-      }
+      showGameOverScreen(app, {
+        isWin: winner?.id === human?.id,
+        winnerName: winner?.name ?? '???',
+        handsPlayed: state.handNumber,
+        finalChips: human?.chips ?? 0,
+        onRestart: startNewGame,
+      });
       break;
     }
 
     // 인간 탈락 체크
     const human = state.players.find(p => !p.isAI);
     if (human?.isEliminated) {
-      renderer.setMessage('칩을 모두 잃었습니다. 게임 오버!');
+      showGameOverScreen(app, {
+        isWin: false,
+        winnerName: state.players.find(p => !p.isEliminated)?.name ?? '???',
+        handsPlayed: state.handNumber,
+        finalChips: 0,
+        onRestart: startNewGame,
+      });
       break;
     }
 
@@ -142,11 +152,10 @@ async function gameLoop(): Promise<void> {
   }
 }
 
-// ─── 앱 시작 ───
-renderer.showStartScreen(async () => {
-  // 사운드 초기화 (사용자 인터랙션 후)
+// ─── 새 게임 시작 ───
+async function startNewGame(): Promise<void> {
   soundManager.init();
-  soundManager.resume();
+  await soundManager.resume();
 
   engine = new GameEngine(actionProvider);
 
@@ -156,4 +165,7 @@ renderer.showStartScreen(async () => {
 
   await animationManager.delay(800);
   gameLoop();
-});
+}
+
+// ─── 앱 시작 ───
+renderer.showStartScreen(() => { startNewGame(); });
