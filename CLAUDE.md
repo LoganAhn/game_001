@@ -9,33 +9,54 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npx tsc --noEmit` — Type-check only (no output files)
 - `npm test` — Run all tests (vitest run)
 - `npm run test:watch` — Run tests in watch mode
-- `npm run test:coverage` — Run tests with coverage report
+- `npm run test:coverage` — Run tests with v8 coverage report
 
 ## Architecture
 
 Browser-based single-player No-Limit Texas Hold'em poker game. One human player vs 5 AI opponents. Pure TypeScript with Vite — no framework, no external runtime dependencies.
 
+### Core Game Flow
+
+The entire game is orchestrated through `main.ts` which wires together GameEngine, Renderer, AI, Animation, and Sound:
+
+```
+main.ts: startNewGame()
+  → GameEngine(actionProvider)     # Engine receives a callback for player decisions
+  → gameLoop()                     # Loops hands until game over
+      → engine.playHands(1)        # Engine runs one hand
+          → actionProvider(player) # Called for EACH player's turn
+              ├─ Human (isAI=false): renderer.requestHumanAction()
+              │   → BettingControls.show() returns Promise<BettingDecision>
+              │   → Player clicks button → Promise resolves
+              └─ AI (isAI=true): getAIAction()
+                  → PreFlopStrategy (Chen Formula) or PostFlopStrategy (hand strength + pot odds)
+                  → Returns { action, amount } after thinking delay
+          → renderer.render(state) # UI updated after each action
+      → showHandPopup() / showGameOverScreen()
+```
+
+**Key pattern**: `ActionProvider` is a single async callback injected into GameEngine. It abstracts away whether the decision comes from UI input or AI computation. This is how GameEngine stays decoupled from both UI and AI.
+
 ### Event-Driven Design
 
-The codebase uses a central `EventBus` (src/utils/EventBus.ts) that decouples game logic from rendering. `GameEvent` is a discriminated union type — all game state changes flow through the bus. GameEngine emits events; UI/Animation/Sound modules subscribe and react independently.
+`EventBus` (src/utils/EventBus.ts) uses a `GameEvent` discriminated union type. GameEngine emits events; UI/Animation/Sound modules can subscribe independently. Currently, main.ts directly calls renderer.render() after actions rather than relying on EventBus subscriptions for rendering.
 
 ### Key Modules
 
 - **src/core/** — Card/Deck types, `HandEvaluator` (brute-force C(7,5)=21 combinations, ranked by encoded `rankValue` for O(1) comparison), Player state, GameState, `PotManager` (side pot calculation & distribution), `GameEngine` (async state machine)
-- **src/betting/** — `BettingAction` (action types, validation, available actions), `BettingRound` (round progression, termination conditions)
-- **src/ai/** — AI decision-making with personality profiles (tightness, aggression, bluffFrequency, skill). Pre-flop uses Chen formula; post-flop uses hand strength + pot odds + board danger
-- **src/ui/** — DOM rendering (no virtual DOM). `Renderer` integrates all views: `TableView`, `CardView` (CSS-only), `PlayerView` (6-seat), `BettingControls` (Promise-based human input), `SettingsMenu`, `GameOverScreen`, `HandRankingHelp`
-- **src/animation/** — Web Animations API. `AnimationManager` (queue + speed control), `CardAnimations` (deal/flip/fold), `ChipAnimations`, `WinEffects` (particles + popup)
-- **src/sound/** — Web Audio API with synthesized sounds (7 effects, no external audio files). `SoundManager` (volume/mute), `SoundEffects`
-- **src/utils/** — `EventBus` (pub/sub), `Constants` (game config values)
-
-### Game Loop
-
-The game loop is async/await-based. Human player turns create a Promise resolved by UI button clicks. AI turns resolve after a simulated thinking delay (0.8~2.5s). This allows natural sequencing of animations and player input within a single async flow.
+- **src/betting/** — `BettingAction` (action types, validation, `getAvailableActions()`), `BettingRound` (round progression, termination conditions)
+- **src/ai/** — `AIController.getAIAction()` dispatches to `PreFlopStrategy` (Chen formula + tightness threshold) or `PostFlopStrategy` (hand strength + pot odds + board danger). `AIPersonality` defines 5 profiles with tightness/aggression/bluffFrequency/skill parameters
+- **src/ui/** — `Renderer` integrates all views and manages DOM lifecycle. `BettingControls` uses Promise-based show()/hide() for human input. `SettingsMenu` controls sound/animation. `GameOverScreen` handles restart flow
+- **src/animation/** — `AnimationManager` (Promise queue + speed multiplier), `CardAnimations`, `ChipAnimations`, `WinEffects` (particles + popup). All use Web Animations API
+- **src/sound/** — `SoundManager` (AudioContext + volume/mute), `SoundEffects` (7 synthesized sounds via OscillatorNode/NoiseBuffer — no external audio files)
 
 ### Hand Evaluation Encoding
 
 `rankValue = category × 10^10 + rank components in descending positional weight`. This allows comparing any two hands with a single numeric comparison.
+
+### Singletons
+
+`animationManager` and `soundManager` are module-level singletons exported from their respective files. Both must be initialized after user interaction (browser autoplay policy).
 
 ## Conventions
 
@@ -48,20 +69,20 @@ The game loop is async/await-based. Human player turns create a Promise resolved
 ## Documentation Structure
 
 - `README.md` — Project overview, setup, architecture
-- `CLAUDE.md` — AI context file (this file)
-- `docs/prd.md` — Product Requirements Document
-- `docs/roadmap.md` — Overall roadmap and progress
-- `docs/sprint/SPRINT_N.md` — Per-sprint detailed plans and results
+- `docs/prd.md` — Product Requirements Document (problem definition, differentiation, functional requirements with IDs)
+- `docs/roadmap.md` — Overall roadmap with sprint progress and dependency graph
+- `docs/sprint/SPRINT_N.md` — Per-sprint plans and completion records
 - `docs/sprint/TEST_REPORT_SPRINT_N.md` — Per-sprint test reports
-- `docs/PROJECT_PLAN.md` — Original project specification
 
 ## Testing
 
-- Unit tests: Vitest (`src/__tests__/*.test.ts`) — 82 tests covering Card, Deck, HandEvaluator, Pot, BettingAction, GameEngine, AI System (Chen Formula, HandStrength, BoardDanger, AIController)
-- Coverage: `npm run test:coverage` generates report in `coverage/`
+- Unit tests: Vitest (`src/__tests__/*.test.ts`) — 82 tests across 7 files
+- Coverage: Stmts 78% / Branch 58% / Funcs 94% / Lines 80% (via `npm run test:coverage`)
+- Core logic (HandEvaluator, Pot, BettingAction) has highest coverage; UI/Animation/Sound are manually verified in browser
 
 ## CI/CD
 
-- GitHub Actions CI: type check → test with coverage → build (on push/PR to main/develop)
-- GitHub Actions Deploy: auto-deploy to GitHub Pages on push to main
-- Deployment URL: https://loganahn.github.io/game_001/
+- `.github/workflows/ci.yml` — type check → test with coverage → build (on push/PR to main/develop)
+- `.github/workflows/deploy.yml` — auto-deploy to GitHub Pages on push to main (uses actions/deploy-pages)
+- `vite.config.ts` reads `BASE_URL` env var for GitHub Pages path prefix (`/game_001/`)
+- Deployment: <https://loganahn.github.io/game_001/>
