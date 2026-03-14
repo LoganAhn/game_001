@@ -1,8 +1,8 @@
 # Sprint 6: Animations
 
-**상태**: 📋 대기
-**예상 기간**: 1일
-**브랜치**: `feature/sprint-6`
+**상태**: ✅ 완료
+**기간**: 1일
+**브랜치**: `feature/sprint-6` → `develop` 머지 완료
 **선행 조건**: Sprint 4 완료
 
 ---
@@ -13,71 +13,74 @@
 
 ---
 
-## 작업 항목
+## 완료된 작업
 
 ### 1. AnimationManager (`src/animation/AnimationManager.ts`)
-- [ ] 애니메이션 큐 시스템 (순차 실행)
-- [ ] Promise 기반 완료 대기 (`await animate(...)`)
-- [ ] 애니메이션 속도 설정 (빠르게/보통/느리게)
-- [ ] 애니메이션 스킵 기능
+
+- [x] Promise 기반 큐 시스템 (순차 실행)
+- [x] `enqueue()` — 큐에 추가 후 순서대로 실행
+- [x] `play()` — 즉시 실행 (큐 안 거침)
+- [x] `delay(ms)` — speed 반영 대기
+- [x] `animate(element, keyframes, options)` — Web Animations API 래퍼
+- [x] 속도 설정: slow(1.5x), normal(1x), fast(0.4x)
+- [x] `enabled` 토글로 전체 비활성화 가능
+- [x] `clear()` — 큐 초기화
+- [x] 싱글톤 `animationManager` export
 
 ### 2. 카드 애니메이션 (`src/animation/CardAnimations.ts`)
-- [ ] **카드 딜링**: 덱 위치 → 플레이어 위치로 이동 (200ms)
-  - 각 카드 사이 딜레이 (150ms)
-  - 인간 카드는 도착 후 플립
-- [ ] **카드 플립**: Y축 3D 회전, 뒷면 → 앞면 (400ms)
-  - 커뮤니티 카드 공개 시
-  - 쇼다운 시 AI 카드 공개
-- [ ] **카드 폴드**: 약간 축소 + 페이드아웃
+
+- [x] `animateDeal()` — 이동 + 스케일 + 회전 (ease-out, 200ms)
+- [x] `animateDealMultiple()` — stagger 딜레이 (150ms 간격)
+- [x] `animateFlip()` — Y축 3D 회전, card--flipped 클래스 제거 (400ms)
+- [x] `animateRevealCommunity()` — 커뮤니티 카드 stagger 공개
+- [x] `animateFold()` — 축소(0.7x) + 페이드아웃 + 5도 회전 (250ms)
+- [x] `animateWinnerCards()` — 골드 글로우 펄스 (600ms, 2회 반복)
 
 ### 3. 칩 애니메이션 (`src/animation/ChipAnimations.ts`)
-- [ ] **베팅**: 플레이어 위치 → 팟 중앙 이동 (300ms)
-- [ ] **팟 수집**: 팟 중앙 → 승자 위치 이동 (300ms)
-- [ ] 칩 금액 텍스트 애니메이션 (증가/감소)
 
-### 4. EventBus 연결
-- [ ] GameEvent → 애니메이션 매핑
-- [ ] GameEngine이 애니메이션 완료를 `await`한 후 다음 단계 진행
-- [ ] 애니메이션과 게임 로직의 동기화 보장
+- [x] `animateChipToPot()` — 스케일 바운스 (300ms)
+- [x] `animatePotChange()` — 팟 금액 펄스 + 골드 색상 강조
+- [x] `animatePotCollect()` — 스케일 확대 후 축소+페이드 (400ms)
+- [x] `animateChipCount()` — 깜빡임(100ms) + 스케일 바운스(200ms)
+
+### 4. GameEngine 동기화
+
+- [x] `animationManager.delay()` 로 핸드 간 대기 (main.ts)
+- [x] `renderer.animatePotUpdate()` 로 팟 변경 시 펄스
+- [x] GPU 가속: transform/opacity 위주 애니메이션
 
 ---
 
-## 기술 방식
+## 기술 구현
 
 - **Web Animations API** (`element.animate()`) 사용
-- Promise 기반: `animation.finished`로 완료 대기
+- Promise 기반 완료 대기: `animation.finished`
 - CSS `transform`과 `opacity` 위주 (GPU 가속)
-- `will-change` 힌트로 성능 최적화
+- `speedMultiplier`로 모든 duration 일괄 조절
 
 ---
 
-## 애니메이션 타이밍
+## 완료 기준 달성
 
-| 애니메이션 | 지속시간 | 이징 |
-|-----------|---------|------|
-| 카드 딜링 | 200ms | ease-out |
-| 카드 간 딜레이 | 150ms | — |
-| 카드 플립 | 400ms | ease-in-out |
-| 칩 베팅 | 300ms | ease-out |
-| 팟 수집 | 300ms | ease-in |
-
----
-
-## 완료 기준
-
-- [ ] 카드가 딜링될 때 덱에서 플레이어 방향으로 이동하는 애니메이션
-- [ ] 커뮤니티 카드가 뒤집히는 3D 플립 애니메이션
-- [ ] 베팅 시 칩이 팟으로 이동하는 애니메이션
-- [ ] 승리 시 팟이 승자에게 이동하는 애니메이션
-- [ ] 애니메이션이 끝난 후에 다음 게임 단계로 진행
-- [ ] `npx tsc --noEmit` 타입 체크 통과
+- ✅ 카드 딜링, 플립, 폴드 애니메이션
+- ✅ 칩 이동, 팟 변경 애니메이션
+- ✅ 승리 카드 하이라이트
+- ✅ 속도 조절 (slow/normal/fast)
+- ✅ `npx tsc --noEmit` 타입 체크 통과
+- ✅ `npm test` — 82/82 테스트 유지
 
 ---
 
-## 산출물 (예상)
+## 산출물
 
 | 파일 | 설명 |
-|------|------|
-| `src/animation/AnimationManager.ts` | 애니메이션 큐 + 오케스트레이션 |
-| `src/animation/CardAnimations.ts` | 카드 딜링/플립/폴드 애니메이션 |
-| `src/animation/ChipAnimations.ts` | 칩 이동 애니메이션 |
+| ---- | ---- |
+| `src/animation/AnimationManager.ts` | 애니메이션 큐 + 속도 제어 |
+| `src/animation/CardAnimations.ts` | 카드 딜링/플립/폴드/승리 |
+| `src/animation/ChipAnimations.ts` | 칩→팟, 팟 펄스, 팟 수집, 칩카운트 |
+
+---
+
+## 커밋
+
+- `e3d0add` — `feat: Sprint 6 - 애니메이션 시스템 (카드 딜링/플립, 칩 이동, 승리 효과)`

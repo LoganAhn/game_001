@@ -253,42 +253,42 @@ game_001/
 - [x] Renderer 통합 + 시작 화면
 - **완료 기준**: UI가 브라우저에 렌더링됨 ✅
 
-### Sprint 4: Interactive Play (2일)
+### Sprint 4: Interactive Play (2일) ✅ 완료
 **목표**: 인간이 실제로 게임을 플레이할 수 있음
-- [ ] 베팅 컨트롤 (버튼 + 슬라이더)
-- [ ] Renderer ↔ EventBus 연결
-- [ ] 인간 플레이어 턴 (Promise 기반 입력 대기)
-- [ ] 더미 AI (항상 콜) 연결
-- **완료 기준**: 더미 AI와 한 핸드를 완료할 수 있음
+- [x] 베팅 컨트롤 (버튼 + 슬라이더 + 프리셋)
+- [x] 인간 플레이어 턴 (Promise 기반 입력 대기)
+- [x] Human/AI ActionProvider 분리
+- **완료 기준**: AI 5명과 한 핸드를 완료할 수 있음 ✅
 
-### Sprint 5: AI System (2일)
+### Sprint 5: AI System (2일) ✅ 완료
 **목표**: 개성 있는 AI 5명과 대전 가능
-- [ ] AIPersonality 타입 및 5개 프로필
-- [ ] PreFlopStrategy (Chen formula)
-- [ ] PostFlopStrategy (핸드 강도 + 팟 오즈)
-- [ ] AIController (프로필 기반 의사결정 디스패처)
-- **완료 기준**: 5명의 AI가 각기 다른 전략으로 플레이
+- [x] AIPersonality 타입 및 5개 프로필
+- [x] PreFlopStrategy (Chen formula)
+- [x] PostFlopStrategy (핸드 강도 + 팟 오즈 + 보드 위험도)
+- [x] AIController (프로필 기반 의사결정 디스패처)
+- [x] AI 테스트 13개 추가 (총 82개)
+- **완료 기준**: 5명의 AI가 각기 다른 전략으로 플레이 ✅
 
-### Sprint 6: Animations (1일)
+### Sprint 6: Animations (1일) ✅ 완료
 **목표**: 모든 게임 액션에 시각적 피드백
-- [ ] AnimationManager (큐 + 오케스트레이션)
-- [ ] 카드 딜링/플립 애니메이션
-- [ ] 칩 이동 애니메이션
-- **완료 기준**: 애니메이션이 게임 진행과 동기화
+- [x] AnimationManager (큐 + 속도 제어)
+- [x] 카드 딜링/플립/폴드 애니메이션
+- [x] 칩 이동/팟 펄스 애니메이션
+- **완료 기준**: 애니메이션이 게임 진행과 동기화 ✅
 
-### Sprint 7: Sound + Effects (1일)
+### Sprint 7: Sound + Effects (1일) ✅ 완료
 **목표**: 청각적 피드백 및 승리 연출
-- [ ] SoundManager (Web Audio API)
-- [ ] 게임 이벤트별 효과음 매핑
-- [ ] 승리 시각 효과 (WinEffects)
-- **완료 기준**: 모든 액션에 사운드가 재생됨
+- [x] SoundManager (Web Audio API, 볼륨/음소거)
+- [x] 7종 합성 효과음 (외부 파일 없음)
+- [x] 승리 파티클 + 핸드명 팝업 (WinEffects)
+- **완료 기준**: 모든 액션에 사운드가 재생됨 ✅
 
-### Sprint 8: Polish (1일)
+### Sprint 8: Polish (1일) ✅ 완료
 **목표**: 완성도 높은 최종 제품
-- [ ] 반응형 디자인 (모바일/태블릿/데스크탑)
-- [ ] 플레이어 탈락 및 게임 종료 처리
-- [ ] 설정 메뉴 (사운드 on/off, 볼륨)
-- [ ] 버그 수정 및 게임 밸런스 조정
+- [x] 반응형 디자인 (데스크탑/태블릿/모바일)
+- [x] 게임 종료 화면 (승/패 + 통계 + 재시작)
+- [x] 설정 메뉴 (사운드/볼륨/애니메이션 속도)
+- [x] 핸드 랭킹 도움말 팝업
 - **완료 기준**: 완성된 게임, 모든 시나리오 테스트 통과
 
 ---
