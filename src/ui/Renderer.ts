@@ -1,10 +1,12 @@
 import { Player } from '../core/Player';
 import { GameState, getSmallBlindIndex, getBigBlindIndex, ActionType } from '../core/GameState';
+import { AvailableActions } from '../betting/BettingAction';
 import { createTableElement } from './TableView';
 import { createPlayerSeat, updatePlayerSeat, PlayerSeatElements } from './PlayerView';
 import { renderCommunityCards } from './CommunityCardsView';
 import { renderPotDisplay } from './PotView';
 import { createMessageBar, updateMessage } from './MessageView';
+import { BettingControls, BettingDecision } from './BettingControls';
 
 export class Renderer {
   private root: HTMLElement;
@@ -15,6 +17,7 @@ export class Renderer {
   private headerInfo!: HTMLElement;
   private playerSeats: Map<number, PlayerSeatElements> = new Map();
   private lastActions: Map<number, ActionType | null> = new Map();
+  private bettingControls!: BettingControls;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -83,11 +86,24 @@ export class Renderer {
       this.tableWrapper.appendChild(seatElements.container);
     }
 
+    // Betting controls
+    this.bettingControls = new BettingControls(this.tableWrapper);
+
     // Message bar
     this.messageBar = createMessageBar();
 
     this.gameContainer.append(header, this.tableWrapper, this.messageBar);
     this.root.appendChild(this.gameContainer);
+  }
+
+  /** 인간 플레이어 베팅 입력 요청 */
+  requestHumanAction(available: AvailableActions, mainPot: number): Promise<BettingDecision> {
+    return this.bettingControls.show(available, mainPot);
+  }
+
+  /** 베팅 컨트롤 숨기기 */
+  hideBettingControls(): void {
+    this.bettingControls.hide();
   }
 
   /** 전체 게임 상태 렌더링 */

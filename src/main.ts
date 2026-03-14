@@ -4,6 +4,7 @@ import { getAvailableActions } from './betting/BettingAction';
 import { ActionType } from './core/GameState';
 import { Player } from './core/Player';
 import { Renderer } from './ui/Renderer';
+import { GAME_CONFIG } from './utils/Constants';
 
 // ─── Renderer ───
 const app = document.getElementById('app')!;
@@ -13,17 +14,45 @@ const renderer = new Renderer(app);
 let engine: GameEngine | null = null;
 
 /**
- * Sprint 3: 더미 AI 액션 프로바이더
- * 모든 플레이어를 자동으로 처리 + UI 업데이트
+ * 통합 액션 프로바이더:
+ * - 인간(Player 0): 베팅 컨트롤 UI를 통해 입력 대기
+ * - AI: 더미 AI (랜덤 콜/폴드/체크)
  */
-const dummyActionProvider: ActionProvider = async (
+const actionProvider: ActionProvider = async (
   player: Player,
   currentBet: number,
   minimumRaise: number,
 ) => {
   const available = getAvailableActions(player, currentBet, minimumRaise);
-  const rand = Math.random();
 
+  if (!player.isAI) {
+    // ─── 인간 플레이어 ───
+    renderer.setMessage(`${player.name}의 차례입니다`);
+    if (engine) renderer.render(engine.getState());
+
+    const decision = await renderer.requestHumanAction(
+      available,
+      engine?.getState().mainPot ?? 0
+    );
+
+    renderer.setPlayerAction(player.id, decision.action);
+    if (engine) renderer.render(engine.getState());
+    return decision;
+  }
+
+  // ─── AI 플레이어 ───
+  renderer.setMessage(`${player.name} 생각 중...`);
+  if (engine) {
+    engine.getState().currentPlayerIndex = player.id;
+    renderer.render(engine.getState());
+  }
+
+  // AI 사고 딜레이
+  const delay = GAME_CONFIG.AI_THINK_MIN_MS +
+    Math.random() * (GAME_CONFIG.AI_THINK_MAX_MS - GAME_CONFIG.AI_THINK_MIN_MS);
+  await new Promise(r => setTimeout(r, delay));
+
+  const rand = Math.random();
   let action: ActionType;
   let amount = 0;
 
@@ -55,14 +84,8 @@ const dummyActionProvider: ActionProvider = async (
     }
   }
 
-  // UI에 액션 표시 + 렌더링
   renderer.setPlayerAction(player.id, action);
-  if (engine) {
-    renderer.render(engine.getState());
-  }
-
-  // AI 사고 딜레이
-  await new Promise(r => setTimeout(r, 400));
+  if (engine) renderer.render(engine.getState());
 
   return { action, amount };
 };
@@ -77,7 +100,7 @@ async function gameLoop(): Promise<void> {
 
     const handNum = engine.getState().handNumber;
     renderer.setMessage(`핸드 #${handNum + 1} 시작...`);
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 800));
 
     await engine.playHands(1);
     renderer.render(engine.getState());
@@ -85,7 +108,18 @@ async function gameLoop(): Promise<void> {
     const state = engine.getState();
     if (state.isGameOver) {
       const winner = state.players.find(p => !p.isEliminated);
-      renderer.setMessage(`\ud83c\udfc6 ${winner?.name ?? '???'} 최종 승리!`);
+      if (winner && !winner.isAI) {
+        renderer.setMessage(`축하합니다! 최종 승리!`);
+      } else {
+        renderer.setMessage(`${winner?.name ?? '???'} 최종 승리! 다시 도전하세요.`);
+      }
+      break;
+    }
+
+    // 인간 탈락 체크
+    const human = state.players.find(p => !p.isAI);
+    if (human?.isEliminated) {
+      renderer.setMessage('칩을 모두 잃었습니다. 게임 오버!');
       break;
     }
 
@@ -96,7 +130,7 @@ async function gameLoop(): Promise<void> {
 
 // ─── 앱 시작 ───
 renderer.showStartScreen(async () => {
-  engine = new GameEngine(dummyActionProvider);
+  engine = new GameEngine(actionProvider);
 
   renderer.initGameUI(engine.getState().players);
   renderer.render(engine.getState());
