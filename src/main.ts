@@ -5,6 +5,7 @@ import { Player } from './core/Player';
 import { Renderer } from './ui/Renderer';
 import { GAME_CONFIG } from './utils/Constants';
 import { getAIAction } from './ai/AIController';
+import { animationManager } from './animation/AnimationManager';
 
 // ─── Renderer ───
 const app = document.getElementById('app')!;
@@ -104,7 +105,7 @@ async function gameLoop(): Promise<void> {
     }
 
     renderer.setMessage(`핸드 #${state.handNumber} 완료`);
-    await new Promise(r => setTimeout(r, 1500));
+    await animationManager.delay(1500);
   }
 }
 

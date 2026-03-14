@@ -7,6 +7,8 @@ import { renderCommunityCards } from './CommunityCardsView';
 import { renderPotDisplay } from './PotView';
 import { createMessageBar, updateMessage } from './MessageView';
 import { BettingControls, BettingDecision } from './BettingControls';
+import { animationManager } from '../animation/AnimationManager';
+import { animatePotChange } from '../animation/ChipAnimations';
 
 export class Renderer {
   private root: HTMLElement;
@@ -162,6 +164,19 @@ export class Renderer {
     if (this.messageBar) {
       updateMessage(this.messageBar, text);
     }
+  }
+
+  /** 팟 변경 애니메이션 */
+  async animatePotUpdate(): Promise<void> {
+    const potAmount = this.communityArea.querySelector('.pot-amount') as HTMLElement | null;
+    if (potAmount) {
+      await animatePotChange(potAmount);
+    }
+  }
+
+  /** 애니메이션 매니저 접근 */
+  getAnimationManager() {
+    return animationManager;
   }
 
   private renderHeader(state: GameState): void {
