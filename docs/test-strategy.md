@@ -172,18 +172,24 @@
 1. actions/checkout@v4
 2. actions/setup-node@v4 (Node 20, npm cache)
 3. npm ci
-4. npx tsc --noEmit          ← 타입 체크
-5. npx vitest run --coverage ← 단위 테스트 + 커버리지
-6. npm run build             ← 빌드
-7. Upload coverage artifact  ← 30일 보존
+4. npx tsc --noEmit              ← 타입 체크
+5. npx vitest run --coverage     ← 82개 단위 테스트 + 커버리지
+6. npm run build                 ← Vite 빌드
+7. npx playwright install chromium ← E2E 브라우저 설치
+8. npx playwright test           ← 3개 E2E 테스트
+9. Upload coverage artifact      ← 30일 보존
+10. Upload playwright report     ← 30일 보존
 ```
 
 ### 배포 파이프라인 (`deploy.yml`)
 
 ```text
-1. checkout + setup + install
-2. 타입 체크 + 테스트
-3. npm run build (BASE_URL=/game_001/)
-4. actions/upload-pages-artifact@v3
-5. actions/deploy-pages@v4 → GitHub Pages
+1. actions/checkout@v4
+2. actions/setup-node@v4 (Node 20, npm cache)
+3. npm ci
+4. npx tsc --noEmit              ← 타입 체크
+5. npx vitest run                ← 단위 테스트
+6. npm run build (BASE_URL=/game_001/) ← 빌드
+7. actions/upload-pages-artifact@v3
+8. actions/deploy-pages@v4 → https://loganahn.github.io/game_001/
 ```
