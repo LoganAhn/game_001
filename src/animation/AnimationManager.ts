@@ -55,13 +55,20 @@ export class AnimationManager {
     return new Promise(r => setTimeout(r, adjusted));
   }
 
-  /** Web Animations API 래퍼 — speed 반영 */
+  /** Web Animations API 래퍼 — speed 반영, 미지원 브라우저 폴백 */
   async animate(
     element: HTMLElement,
     keyframes: Keyframe[],
     options: KeyframeAnimationOptions,
   ): Promise<void> {
     if (!this._enabled) return;
+
+    // Web Animations API 미지원 브라우저 폴백: 즉시 최종 상태 적용
+    if (typeof element.animate !== 'function') {
+      const lastFrame = keyframes[keyframes.length - 1];
+      if (lastFrame) Object.assign(element.style, lastFrame);
+      return;
+    }
 
     const duration = typeof options.duration === 'number'
       ? options.duration * this.speedMultiplier

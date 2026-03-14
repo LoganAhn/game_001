@@ -8,10 +8,15 @@ export class SoundManager {
   private _muted = false;
   private _volume = 0.5;
 
-  /** AudioContext 초기화 (사용자 인터랙션 후 호출) */
+  /** AudioContext 초기화 (사용자 인터랙션 후 호출, 미지원 브라우저 폴백) */
   init(): void {
     if (this.ctx) return;
-    this.ctx = new AudioContext();
+    const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) {
+      console.warn('Web Audio API not supported — sound disabled');
+      return;
+    }
+    this.ctx = new AudioCtx();
     this.masterGain = this.ctx.createGain();
     this.masterGain.gain.value = this._volume;
     this.masterGain.connect(this.ctx.destination);
