@@ -16,20 +16,24 @@ Browser-based single-player No-Limit Texas Hold'em poker game. One human player 
 
 ### Event-Driven Design
 
-The codebase uses a central `EventBus` (src/utils/EventBus.ts) that decouples game logic from rendering. `GameEvent` is a discriminated union type — all game state changes flow through the bus. GameEngine emits events; UI/Animation/Sound modules subscribe and react independently.
+The codebase uses a central `EventBus` (src/utils/EventBus.ts) that decouples game logic from rendering. `GameEvent` is a discriminated union type — all game state changes flow through the bus. GameEngine emits events; UI modules subscribe and react independently.
 
-### Key Modules
+### Implemented Modules
 
-- **src/core/** — Game logic: Card/Deck types, `HandEvaluator` (brute-force C(7,5)=21 combinations, ranked by encoded `rankValue` for O(1) comparison), Player state, GameState, Pot management
-- **src/betting/** — Betting round logic, action types (fold/check/call/raise/allin), validation
-- **src/ai/** — AI decision-making with personality profiles (tightness, aggression, bluffFrequency). Pre-flop uses Chen formula; post-flop uses hand strength + pot odds
-- **src/ui/** — DOM rendering (no virtual DOM). CSS-only card rendering (no image assets)
-- **src/animation/** — Web Animations API for sequenced card/chip animations
-- **src/sound/** — Web Audio API with synthesized sounds
+- **src/core/** — Card/Deck types, `HandEvaluator` (brute-force C(7,5)=21 combinations, ranked by encoded `rankValue` for O(1) comparison), Player state, GameState, `PotManager` (side pot calculation & distribution), `GameEngine` (async state machine)
+- **src/betting/** — `BettingAction` (action types, validation, available actions), `BettingRound` (round progression, termination conditions)
+- **src/ui/** — DOM rendering (no virtual DOM). `Renderer` integrates all views: `TableView` (oval felt table), `CardView` (CSS-only cards), `PlayerView` (6-seat layout with dealer/blind markers), `CommunityCardsView`, `PotView`, `MessageView`
+- **src/utils/** — `EventBus` (pub/sub), `Constants` (game config values)
+
+### Planned Modules (not yet implemented)
+
+- **src/ai/** — AI decision-making with personality profiles (Sprint 5)
+- **src/animation/** — Web Animations API for sequenced animations (Sprint 6)
+- **src/sound/** — Web Audio API with synthesized sounds (Sprint 7)
 
 ### Game Loop
 
-The game loop is async/await-based. Human player turns create a Promise resolved by UI button clicks. AI turns resolve after a simulated thinking delay. This allows natural sequencing of animations and player input within a single async flow.
+The game loop is async/await-based. Human player turns will create a Promise resolved by UI button clicks (Sprint 4). AI turns resolve after a simulated thinking delay. This allows natural sequencing of animations and player input within a single async flow.
 
 ### Hand Evaluation Encoding
 
@@ -40,5 +44,18 @@ The game loop is async/await-based. Human player turns create a Promise resolved
 - Language: Korean for user-facing text and documentation; English for code identifiers
 - Git Flow branching: main (release), develop (integration), feature/* (work branches)
 - TypeScript strict mode with `noUncheckedIndexedAccess` — use `!` assertion only when index is guaranteed valid
-- No external dependencies — DOM API, Web Animations API, Web Audio API only
-- Project plan and sprint tracking in docs/PROJECT_PLAN.md
+- No external runtime dependencies — DOM API, Web Animations API, Web Audio API only
+- Dev dependencies allowed: Vite, TypeScript, Vitest, Playwright
+- Project plan and sprint tracking in docs/
+
+## Documentation Structure
+
+- `docs/prd.md` — Product Requirements Document
+- `docs/roadmap.md` — Overall roadmap and progress
+- `docs/sprint/SPRINT_N.md` — Per-sprint detailed plans and results
+- `docs/PROJECT_PLAN.md` — Original project specification
+
+## Testing
+
+- Unit tests: Vitest (`src/__tests__/*.test.ts`) — 69 tests covering Card, Deck, HandEvaluator, Pot, BettingAction, GameEngine
+- E2E tests: Playwright (planned for Sprint 8)

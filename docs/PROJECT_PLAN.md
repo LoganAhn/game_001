@@ -235,21 +235,23 @@ game_001/
 - [x] EventBus 구현
 - **완료 기준**: 콘솔에서 핸드 평가 동작 확인 ✅
 
-### Sprint 2: Game Engine (2일)
+### Sprint 2: Game Engine (2일) ✅ 완료
 **목표**: 전체 게임 로직 완성
-- [ ] GameEngine (게임 플로우 상태 머신)
-- [ ] BettingRound, BettingAction, BettingValidator
-- [ ] Pot 관리 (메인팟 + 사이드팟)
-- [ ] 블라인드 증가 시스템
-- **완료 기준**: 콘솔 로그로 AI끼리 전체 핸드 진행 확인
+- [x] GameEngine (게임 플로우 상태 머신)
+- [x] BettingRound, BettingAction
+- [x] Pot 관리 (메인팟 + 사이드팟)
+- [x] 블라인드 증가 시스템
+- [x] Vitest 도입, 69개 단위 테스트
+- **완료 기준**: 콘솔 로그로 AI끼리 전체 핸드 진행 확인 ✅
 
-### Sprint 3: Basic UI (2일)
+### Sprint 3: Basic UI (2일) ✅ 완료
 **목표**: 시각적 게임 테이블 완성
-- [ ] 타원형 포커 테이블 CSS
-- [ ] CSS 전용 카드 렌더링
-- [ ] 6인 플레이어 좌석 배치
-- [ ] 커뮤니티 카드 + 팟 표시
-- **완료 기준**: 정적 UI가 브라우저에 렌더링됨
+- [x] 타원형 포커 테이블 CSS (카지노 럭셔리 테마)
+- [x] CSS 전용 카드 렌더링
+- [x] 6인 플레이어 좌석 배치
+- [x] 커뮤니티 카드 + 팟 표시
+- [x] Renderer 통합 + 시작 화면
+- **완료 기준**: UI가 브라우저에 렌더링됨 ✅
 
 ### Sprint 4: Interactive Play (2일)
 **목표**: 인간이 실제로 게임을 플레이할 수 있음
