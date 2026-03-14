@@ -1,10 +1,10 @@
 import './style.css';
 import { GameEngine, ActionProvider } from './core/GameEngine';
 import { getAvailableActions } from './betting/BettingAction';
-import { ActionType } from './core/GameState';
 import { Player } from './core/Player';
 import { Renderer } from './ui/Renderer';
 import { GAME_CONFIG } from './utils/Constants';
+import { getAIAction } from './ai/AIController';
 
 // ─── Renderer ───
 const app = document.getElementById('app')!;
@@ -52,42 +52,22 @@ const actionProvider: ActionProvider = async (
     Math.random() * (GAME_CONFIG.AI_THINK_MAX_MS - GAME_CONFIG.AI_THINK_MIN_MS);
   await new Promise(r => setTimeout(r, delay));
 
-  const rand = Math.random();
-  let action: ActionType;
-  let amount = 0;
+  // AI 의사결정 (성격 프로필 기반)
+  const state = engine?.getState();
+  const aiDecision = getAIAction(
+    player,
+    available,
+    state?.communityCards ?? [],
+    state?.phase ?? 'preflop',
+    state?.mainPot ?? 0,
+    currentBet,
+    state?.bigBlind ?? GAME_CONFIG.INITIAL_BIG_BLIND,
+  );
 
-  if (available.canCheck) {
-    if (rand < 0.7) {
-      action = 'check';
-    } else if (rand < 0.9 && available.canRaise) {
-      action = 'raise';
-      amount = available.minRaise;
-    } else {
-      action = 'check';
-    }
-  } else if (available.canCall) {
-    if (rand < 0.6) {
-      action = 'call';
-      amount = available.callAmount;
-    } else if (rand < 0.75 && available.canRaise) {
-      action = 'raise';
-      amount = available.minRaise;
-    } else {
-      action = 'fold';
-    }
-  } else {
-    if (rand < 0.5 && available.canAllIn) {
-      action = 'allin';
-      amount = available.allInAmount;
-    } else {
-      action = 'fold';
-    }
-  }
-
-  renderer.setPlayerAction(player.id, action);
+  renderer.setPlayerAction(player.id, aiDecision.action);
   if (engine) renderer.render(engine.getState());
 
-  return { action, amount };
+  return aiDecision;
 };
 
 // ─── 게임 루프 ───
