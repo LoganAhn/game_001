@@ -5,4 +5,7 @@ export default defineConfig({
   server: {
     open: true,
   },
+  test: {
+    exclude: ['e2e/**', 'node_modules/**'],
+  },
 });

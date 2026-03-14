@@ -25,10 +25,15 @@ export class HandRankingHelp {
     this.toggle.className = 'help-toggle';
     this.toggle.textContent = '?';
     this.toggle.title = '\ud578\ub4dc \ub7ad\ud0b9';
+    this.toggle.setAttribute('aria-expanded', 'false');
+    this.toggle.setAttribute('aria-controls', 'help-panel');
     this.toggle.addEventListener('click', () => this.togglePanel());
 
     this.panel = document.createElement('div');
     this.panel.className = 'help-panel';
+    this.panel.id = 'help-panel';
+    this.panel.setAttribute('role', 'dialog');
+    this.panel.setAttribute('aria-label', '핸드 랭킹');
 
     const heading = document.createElement('h3');
     heading.textContent = 'Hand Rankings';
@@ -62,10 +67,12 @@ export class HandRankingHelp {
   private togglePanel(): void {
     this.isOpen = !this.isOpen;
     this.panel.classList.toggle('help-panel--open', this.isOpen);
+    this.toggle.setAttribute('aria-expanded', String(this.isOpen));
   }
 
   private closePanel(): void {
     this.isOpen = false;
     this.panel.classList.remove('help-panel--open');
+    this.toggle.setAttribute('aria-expanded', 'false');
   }
 }

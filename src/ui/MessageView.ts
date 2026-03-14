@@ -5,6 +5,8 @@ export function createMessageBar(): HTMLElement {
   const bar = document.createElement('div');
   bar.className = 'message-bar';
   bar.id = 'message-bar';
+  bar.setAttribute('role', 'status');
+  bar.setAttribute('aria-live', 'polite');
   bar.textContent = 'Texas Hold\'em에 오신 것을 환영합니다';
   return bar;
 }

@@ -1,9 +1,14 @@
 # ♠ Texas Hold'em Poker
 
+[![CI](https://github.com/LoganAhn/game_001/actions/workflows/ci.yml/badge.svg)](https://github.com/LoganAhn/game_001/actions/workflows/ci.yml)
+[![Deploy](https://github.com/LoganAhn/game_001/actions/workflows/deploy.yml/badge.svg)](https://github.com/LoganAhn/game_001/actions/workflows/deploy.yml)
+
 웹 브라우저에서 바로 플레이할 수 있는 **싱글플레이어 노리밋 텍사스 홀덤** 포커 게임.
 1명의 인간 플레이어가 개성 있는 AI 5명과 대결합니다.
 
 > **[Play Now](https://loganahn.github.io/game_001/)** — 설치 없이 브라우저에서 즉시 플레이
+
+**테스트**: 82개 단위 테스트 + 3개 E2E 테스트 | **커버리지**: Stmts 78% / Lines 80% / Funcs 94% | **빌드**: gzip 18KB
 
 ---
 

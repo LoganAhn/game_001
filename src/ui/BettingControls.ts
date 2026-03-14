@@ -27,6 +27,9 @@ export class BettingControls {
   constructor(parent: HTMLElement) {
     this.container = document.createElement('div');
     this.container.className = 'betting-controls';
+    this.container.setAttribute('role', 'group');
+    this.container.setAttribute('aria-label', '베팅 컨트롤');
+    this.container.setAttribute('aria-hidden', 'true');
 
     // Fold button
     this.foldBtn = this.createButton('Fold', 'btn--fold');
@@ -53,6 +56,7 @@ export class BettingControls {
     this.slider.min = '0';
     this.slider.max = '0';
     this.slider.value = '0';
+    this.slider.setAttribute('aria-label', '레이즈 금액');
     this.slider.addEventListener('input', () => {
       this.sliderAmount.textContent = Number(this.slider.value).toLocaleString();
     });
@@ -60,6 +64,7 @@ export class BettingControls {
     this.sliderAmount = document.createElement('span');
     this.sliderAmount.className = 'raise-amount';
     this.sliderAmount.textContent = '0';
+    this.sliderAmount.setAttribute('aria-live', 'polite');
 
     this.raiseBtn = this.createButton('Raise', 'btn--raise');
     this.raiseBtn.addEventListener('click', () => {
@@ -161,6 +166,7 @@ export class BettingControls {
 
     // Show container
     this.container.classList.add('betting-controls--visible');
+    this.container.setAttribute('aria-hidden', 'false');
 
     return new Promise<BettingDecision>((resolve) => {
       this.resolveFn = resolve;
@@ -170,6 +176,7 @@ export class BettingControls {
   /** 컨트롤 숨기기 */
   hide(): void {
     this.container.classList.remove('betting-controls--visible');
+    this.container.setAttribute('aria-hidden', 'true');
     this.resolveFn = null;
   }
 

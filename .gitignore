@@ -6,3 +6,5 @@ dist/
 Thumbs.db
 .claude/
 coverage/
+test-results/
+playwright-report/

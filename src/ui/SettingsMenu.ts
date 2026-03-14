@@ -15,11 +15,16 @@ export class SettingsMenu {
     this.toggle.className = 'settings-toggle';
     this.toggle.textContent = '\u2699';
     this.toggle.title = '\uc124\uc815';
+    this.toggle.setAttribute('aria-expanded', 'false');
+    this.toggle.setAttribute('aria-controls', 'settings-panel');
     this.toggle.addEventListener('click', () => this.togglePanel());
 
     // Panel
     this.panel = document.createElement('div');
     this.panel.className = 'settings-panel';
+    this.panel.id = 'settings-panel';
+    this.panel.setAttribute('role', 'dialog');
+    this.panel.setAttribute('aria-label', '설정');
 
     // Sound toggle
     this.panel.appendChild(this.createToggleRow(
@@ -55,11 +60,13 @@ export class SettingsMenu {
   private togglePanel(): void {
     this.isOpen = !this.isOpen;
     this.panel.classList.toggle('settings-panel--open', this.isOpen);
+    this.toggle.setAttribute('aria-expanded', String(this.isOpen));
   }
 
   private closePanel(): void {
     this.isOpen = false;
     this.panel.classList.remove('settings-panel--open');
+    this.toggle.setAttribute('aria-expanded', 'false');
   }
 
   private createToggleRow(label: string, initial: boolean, onChange: (on: boolean) => void): HTMLElement {

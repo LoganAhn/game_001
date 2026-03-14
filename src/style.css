@@ -592,6 +592,19 @@ html, body {
   transform: translateY(0);
 }
 
+.btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.settings-toggle:focus-visible,
+.help-toggle:focus-visible,
+.start-btn:focus-visible,
+.toggle-switch:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 .btn--fold {
   background: rgba(231, 76, 60, 0.15);
   color: var(--danger);

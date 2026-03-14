@@ -13,6 +13,9 @@ export function showGameOverScreen(
 ): void {
   const overlay = document.createElement('div');
   overlay.className = 'game-over-overlay animate-fade-in';
+  overlay.setAttribute('role', 'alertdialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', options.isWin ? '승리' : '게임 오버');
 
   const title = document.createElement('div');
   title.className = 'game-over-title';
@@ -35,6 +38,7 @@ export function showGameOverScreen(
   const restartBtn = document.createElement('button');
   restartBtn.className = 'start-btn';
   restartBtn.textContent = '\uc0c8 \uac8c\uc784 \uc2dc\uc791';
+  restartBtn.setAttribute('aria-label', '새 게임 시작');
   restartBtn.addEventListener('click', () => {
     overlay.remove();
     options.onRestart();
@@ -42,6 +46,9 @@ export function showGameOverScreen(
 
   overlay.append(title, subtitle, stats, restartBtn);
   parent.appendChild(overlay);
+
+  // 포커스를 재시작 버튼으로 이동 (접근성)
+  requestAnimationFrame(() => restartBtn.focus());
 }
 
 function createStat(value: string, label: string): HTMLElement {

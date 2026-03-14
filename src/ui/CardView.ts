@@ -1,4 +1,11 @@
-import { Card, SUIT_SYMBOLS, RANK_LABELS, isRedSuit } from '../core/Card';
+import { Card, Suit, SUIT_SYMBOLS, RANK_LABELS, isRedSuit } from '../core/Card';
+
+const SUIT_NAMES: Record<Suit, string> = {
+  [Suit.Spades]: 'Spades',
+  [Suit.Hearts]: 'Hearts',
+  [Suit.Diamonds]: 'Diamonds',
+  [Suit.Clubs]: 'Clubs',
+};
 
 /**
  * CSS 전용 카드 렌더링 (이미지 없음)
@@ -7,6 +14,8 @@ export function createCardElement(card: Card, faceDown = false): HTMLElement {
   const el = document.createElement('div');
   const colorClass = isRedSuit(card.suit) ? 'card--red' : 'card--black';
   el.className = `card ${colorClass}${faceDown ? ' card--flipped' : ''}`;
+  el.setAttribute('role', 'img');
+  el.setAttribute('aria-label', `${RANK_LABELS[card.rank]} of ${SUIT_NAMES[card.suit]}`);
 
   const rankLabel = RANK_LABELS[card.rank];
   const suitSymbol = SUIT_SYMBOLS[card.suit];
@@ -56,6 +65,8 @@ function createCorner(rank: string, suit: string): HTMLElement {
 export function createCardBackElement(): HTMLElement {
   const el = document.createElement('div');
   el.className = 'card card--flipped';
+  el.setAttribute('role', 'img');
+  el.setAttribute('aria-label', 'Face-down card');
 
   const face = document.createElement('div');
   face.className = 'card-face';
