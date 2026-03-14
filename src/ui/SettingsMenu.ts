@@ -3,6 +3,11 @@ import { animationManager } from '../animation/AnimationManager';
 
 /**
  * 설정 메뉴 — 사운드/애니메이션 조절
+ *
+ * 통합: Renderer.initGameUI()에서 생성, 게임 컨테이너에 마운트
+ * 사운드: soundManager.muted / soundManager.volume 직접 제어
+ * 애니메이션: animationManager.speed (slow/normal/fast) 직접 제어
+ * UI: 톱니바퀴 아이콘 → 패널 토글 (aria-expanded)
  */
 export class SettingsMenu {
   private toggle: HTMLButtonElement;

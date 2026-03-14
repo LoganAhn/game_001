@@ -8,7 +8,15 @@ export interface BettingDecision {
 
 /**
  * 베팅 컨트롤 UI — 인간 플레이어 턴에 표시
- * Promise 기반: show()가 호출되면 플레이어의 액션을 기다려서 resolve
+ *
+ * 통합 흐름:
+ *   main.ts actionProvider(human) → Renderer.requestHumanAction()
+ *     → BettingControls.show(available, mainPot) → Promise<BettingDecision>
+ *     → 플레이어가 버튼 클릭 → resolve({action, amount})
+ *     → main.ts에서 사운드 재생 + UI 갱신
+ *
+ * 컨트롤 구성: Fold, Check, Call, Raise(슬라이더+프리셋), All-In
+ * 인간 턴이 아닐 때는 aria-hidden="true"로 숨김
  */
 export class BettingControls {
   private container: HTMLElement;

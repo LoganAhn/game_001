@@ -1,5 +1,12 @@
 /**
  * 게임 종료 화면 — 승리/패배 결과 + 통계 + 재시작 버튼
+ *
+ * 통합 흐름:
+ *   main.ts gameLoop() → state.isGameOver 또는 human.isEliminated 감지
+ *     → showGameOverScreen(app, { isWin, winnerName, handsPlayed, finalChips, onRestart })
+ *     → "새 게임 시작" 클릭 → onRestart() → startNewGame()
+ *
+ * 접근성: role="alertdialog", aria-modal="true", 재시작 버튼 자동 포커스
  */
 export function showGameOverScreen(
   parent: HTMLElement,

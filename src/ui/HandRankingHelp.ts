@@ -1,5 +1,9 @@
 /**
- * 핸드 랭킹 참조 팝업
+ * 핸드 랭킹 참조 팝업 — 10개 핸드 순위 표시
+ *
+ * 통합: Renderer.initGameUI()에서 생성, 게임 컨테이너에 마운트
+ * UI: ? 버튼 → 패널 토글 (aria-expanded, aria-controls)
+ * 내용: Royal Flush ~ High Card, 한국어 설명
  */
 
 const HAND_RANKINGS = [
