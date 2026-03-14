@@ -3,6 +3,8 @@ import { Player } from './Player';
 
 export type GamePhase = 'waiting' | 'preflop' | 'flop' | 'turn' | 'river' | 'showdown' | 'hand_complete';
 
+export type ActionType = 'fold' | 'check' | 'call' | 'raise' | 'allin';
+
 export interface SidePot {
   amount: number;
   eligiblePlayerIds: number[];
