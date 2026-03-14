@@ -1,3 +1,16 @@
+/**
+ * AIController — AI 의사결정 디스패처
+ *
+ * 게임 페이즈에 따라 적절한 전략 모듈로 위임하는 진입점.
+ * GameEngine의 ActionProvider 콜백에서 AI 플레이어일 때 호출된다.
+ *
+ * 디스패치 구조:
+ *  - preflop → PreFlopStrategy (Chen Formula 기반 핸드 평가)
+ *  - postflop(flop/turn/river) → PostFlopStrategy (핸드 강도 + 팟 오즈)
+ *
+ * 각 전략 모듈의 결정(shouldPlay/shouldRaise 또는 action/betSizeRatio)을
+ * AvailableActions 제약 조건에 맞춰 최종 AIAction(action + amount)으로 변환한다.
+ */
 import { Card } from '../core/Card';
 import { Player } from '../core/Player';
 import { ActionType, GamePhase } from '../core/GameState';
@@ -5,6 +18,12 @@ import { AvailableActions } from '../betting/BettingAction';
 import { AI_PROFILES, AIPersonality } from './AIPersonality';
 import { preFlopDecision } from './PreFlopStrategy';
 import { postFlopDecision } from './PostFlopStrategy';
+
+// ─── 의사결정 상수 ───────────────────────────────────────────
+/** 이 배수 이상의 레이즈를 시도하면 올인을 고려 */
+const ALL_IN_RAISE_MULTIPLIER = 4;
+/** 올인 금액이 최대 레이즈의 이 비율 미만이면 올인이 더 유리하다고 판단 */
+const ALL_IN_CHIP_RATIO = 0.5;
 
 export interface AIAction {
   action: ActionType;
@@ -39,6 +58,13 @@ export function getAIAction(
   return postFlopAction(holeCards, communityCards, personality, available, potSize);
 }
 
+/**
+ * 프리플롭 액션 결정
+ *
+ * PreFlopStrategy의 결정(shouldPlay, shouldRaise, raiseMultiplier)을
+ * AvailableActions 범위 내의 구체적 액션과 금액으로 변환한다.
+ * raiseMultiplier가 ALL_IN_RAISE_MULTIPLIER 이상이고 올인 비용이 적으면 올인한다.
+ */
 function preFlopAction(
   holeCards: Card[],
   personality: AIPersonality,
@@ -59,7 +85,7 @@ function preFlopAction(
     const raiseAmount = Math.max(available.minRaise, Math.min(raiseTarget, available.maxRaise));
 
     // 매우 강한 핸드(4x+ raise) → 올인 고려
-    if (decision.raiseMultiplier >= 4 && available.canAllIn && available.allInAmount < available.maxRaise * 0.5) {
+    if (decision.raiseMultiplier >= ALL_IN_RAISE_MULTIPLIER && available.canAllIn && available.allInAmount < available.maxRaise * ALL_IN_CHIP_RATIO) {
       return { action: 'allin', amount: available.allInAmount };
     }
 
@@ -82,6 +108,13 @@ function preFlopAction(
   return { action: 'fold', amount: 0 };
 }
 
+/**
+ * 포스트플롭 액션 결정
+ *
+ * PostFlopStrategy의 결정(action, betSizeRatio)을
+ * AvailableActions 제약에 맞춰 실행 가능한 액션으로 매핑한다.
+ * 전략이 raise를 권장하지만 raise가 불가능하면 call/check/fold로 폴백한다.
+ */
 function postFlopAction(
   holeCards: Card[],
   communityCards: Card[],

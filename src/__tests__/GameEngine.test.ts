@@ -57,9 +57,12 @@ describe('GameEngine', () => {
     engine.setLogEnabled(false);
     await engine.playHands(1);
     const state = engine.getState();
-    // 1명만 칩이 증가 (블라인드 수집)
-    const winners = state.players.filter(p => p.chips > GAME_CONFIG.STARTING_CHIPS);
-    expect(winners.length).toBeGreaterThanOrEqual(1);
+    // 칩 총합 보존 (블라인드만 이동하므로 총합 불변)
+    const totalChips = state.players.reduce((sum, p) => sum + p.chips, 0);
+    expect(totalChips).toBe(GAME_CONFIG.STARTING_CHIPS * GAME_CONFIG.TOTAL_PLAYERS);
+    // 최소 1명의 칩이 시작과 다름 (블라인드 이동 발생)
+    const changed = state.players.filter(p => p.chips !== GAME_CONFIG.STARTING_CHIPS);
+    expect(changed.length).toBeGreaterThanOrEqual(1);
   });
 
   it('핸드 완료 후 phase는 hand_complete', async () => {

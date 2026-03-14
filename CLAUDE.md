@@ -10,6 +10,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm test` — Run all tests (vitest run)
 - `npm run test:watch` — Run tests in watch mode
 - `npm run test:coverage` — Run tests with v8 coverage report
+- `npm run test:e2e` — Run Playwright E2E tests (requires `npx playwright install` first)
+- `npm run test:e2e:ui` — Run E2E tests with interactive UI
+- `npx vitest run src/__tests__/HandEvaluator.test.ts` — Run a single test file
 
 ## Architecture
 
@@ -19,7 +22,7 @@ Browser-based single-player No-Limit Texas Hold'em poker game. One human player 
 
 The entire game is orchestrated through `main.ts` which wires together GameEngine, Renderer, AI, Animation, and Sound:
 
-```
+```text
 main.ts: startNewGame()
   → GameEngine(actionProvider)     # Engine receives a callback for player decisions
   → gameLoop()                     # Loops hands until game over
@@ -73,16 +76,20 @@ main.ts: startNewGame()
 - `docs/roadmap.md` — Overall roadmap with sprint progress and dependency graph
 - `docs/sprint/SPRINT_N.md` — Per-sprint plans and completion records
 - `docs/sprint/TEST_REPORT_SPRINT_N.md` — Per-sprint test reports
+- `docs/DECISION_LOG.md` — Architecture Decision Records (ADR, 7 decisions)
+- `docs/test-strategy.md` — Test pyramid, coverage targets, quality gates
+- `docs/TEST_RESULTS.md` — Latest test execution results and CI/CD pipeline details
 
 ## Testing
 
 - Unit tests: Vitest (`src/__tests__/*.test.ts`) — 82 tests across 7 files
+- E2E tests: Playwright (`e2e/game.spec.ts`) — 3 tests (page load, game start, betting controls)
 - Coverage: Stmts 78% / Branch 58% / Funcs 94% / Lines 80% (via `npm run test:coverage`)
-- Core logic (HandEvaluator, Pot, BettingAction) has highest coverage; UI/Animation/Sound are manually verified in browser
+- Core logic (HandEvaluator, Pot, BettingAction) has highest coverage; UI/Animation/Sound are verified via E2E + manual browser testing
 
 ## CI/CD
 
-- `.github/workflows/ci.yml` — type check → test with coverage → build (on push/PR to main/develop)
+- `.github/workflows/ci.yml` — type check → test with coverage → build → E2E (on push/PR to main/develop)
 - `.github/workflows/deploy.yml` — auto-deploy to GitHub Pages on push to main (uses actions/deploy-pages)
 - `vite.config.ts` reads `BASE_URL` env var for GitHub Pages path prefix (`/game_001/`)
 - Deployment: <https://loganahn.github.io/game_001/>

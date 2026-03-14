@@ -59,15 +59,19 @@
 
 ## 3. E2E 테스트 (Playwright)
 
-**결과**: ✅ **3/3 통과**
+**결과**: ✅ **7/7 통과**
 **브라우저**: Chromium
-**실행 시간**: 7.3s
+**실행 시간**: 19.5s
 
 | # | 시나리오 | 시간 | 결과 |
 | --- | -------- | ---- | ---- |
-| 1 | 페이지 로드 — 타이틀과 시작 버튼 표시 | 637ms | ✅ |
-| 2 | 게임 시작 — 6인 좌석 및 테이블 렌더링 | 505ms | ✅ |
-| 3 | 베팅 컨트롤 — 인간 턴에 표시 | 5.2s | ✅ |
+| 1 | 페이지 로드 — 타이틀과 시작 버튼 표시 | 3.1s | ✅ |
+| 2 | 게임 시작 — 6인 좌석 및 테이블 렌더링 | 547ms | ✅ |
+| 3 | 베팅 컨트롤 — 인간 턴에 표시 | 7.3s | ✅ |
+| 4 | 설정 메뉴 — 설정 버튼 클릭 시 메뉴 표시 | 352ms | ✅ |
+| 5 | 핸드 랭킹 도움말 — 도움말 버튼 클릭 시 팝업 | 344ms | ✅ |
+| 6 | Fold 액션 — Fold 버튼 클릭 시 컨트롤 사라짐 | 6.3s | ✅ |
+| 7 | 반응형 — 모바일 뷰포트(375x667)에서 테이블 표시 | 567ms | ✅ |
 
 ### 검증 상세
 
@@ -86,6 +90,25 @@
 - 게임 시작 후 인간 턴까지 대기 (AI 딜레이 포함 최대 30초) ✅
 - `.betting-controls--visible` 표시 ✅
 - Fold 또는 Check 버튼 중 하나 표시 ✅
+
+**테스트 4: 설정 메뉴**
+- 게임 시작 → 설정 버튼(⚙) 클릭 → 설정 메뉴 표시 ✅
+- 볼륨 슬라이더(input[type="range"]) 존재 ✅
+- 닫기 버튼 클릭 → 메뉴 닫힘 ✅
+
+**테스트 5: 핸드 랭킹 도움말**
+- 게임 시작 → 도움말 버튼(?) 클릭 → 핸드 랭킹 팝업 표시 ✅
+- "Royal Flush" 텍스트 존재 ✅
+- 닫기 → 팝업 사라짐 ✅
+
+**테스트 6: Fold 액션**
+- 인간 턴 대기 → Fold 버튼 클릭 → `.betting-controls--visible` 사라짐 ✅
+- 게임이 다음 단계로 진행됨 (크래시 없음) ✅
+
+**테스트 7: 반응형 (모바일)**
+- 뷰포트 375x667 → 포커 테이블 표시 ✅
+- 플레이어 좌석 6개 렌더링 ✅
+- 시작 버튼 클릭 가능 ✅
 
 ---
 
@@ -113,7 +136,7 @@ dist/assets/index-BlgaX9g8.js   47.71 kB │ gzip: 13.91 kB
 | ------ | ---- | ---- |
 | 타입 체크 | `tsc --noEmit` 에러 0 | ✅ |
 | 단위 테스트 | 82개+ 전체 통과 | ✅ 82/82 |
-| E2E 테스트 | 3개 전체 통과 | ✅ 3/3 |
+| E2E 테스트 | 7개 전체 통과 | ✅ 7/7 |
 | 빌드 | 성공 | ✅ |
 | 번들 크기 | gzip < 50KB | ✅ 18.75KB |
 | 배포 | GitHub Pages 정상 | ✅ |
@@ -122,7 +145,7 @@ dist/assets/index-BlgaX9g8.js   47.71 kB │ gzip: 13.91 kB
 
 ## 6. CI/CD 파이프라인 현황
 
-### CI (`ci.yml`) — push/PR to main/develop
+### CI (`ci.yml`) — push/PR to main/develop + 매일 정기 실행
 
 ```text
 1. checkout (actions/checkout@v4)
@@ -131,18 +154,26 @@ dist/assets/index-BlgaX9g8.js   47.71 kB │ gzip: 13.91 kB
 4. npx tsc --noEmit              ← 타입 체크
 5. npx vitest run --coverage     ← 82개 단위 테스트 + 커버리지
 6. npm run build                 ← Vite 빌드
-7. npx playwright install chromium ← E2E 브라우저 설치
-8. npx playwright test           ← 3개 E2E 테스트
-9. Upload coverage artifact      ← 30일 보존
-10. Upload playwright report     ← 30일 보존
+7. 번들 크기 체크                ← gzip 50KB 초과 시 경고
+8. npx playwright install chromium ← E2E 브라우저 설치
+9. npx playwright test           ← 7개 E2E 테스트
+10. Upload coverage artifact     ← 30일 보존
+11. Upload playwright report     ← 30일 보존
 ```
+
+**추가 기능**:
+- `schedule: cron '0 0 * * *'` — 매일 자정(UTC) 정기 회귀 테스트
+- 번들 크기 체크 — gzip 합계가 50KB 초과 시 빌드 경고
 
 ### Deploy (`deploy.yml`) — push to main
 
 ```text
-1~5. CI와 동일 (타입체크 + 테스트 + 빌드)
-6. Build with BASE_URL=/game_001/
-7. Upload pages artifact
-8. Deploy to GitHub Pages (actions/deploy-pages@v4)
+1. checkout + setup + npm ci
+2. npx tsc --noEmit              ← 타입 체크
+3. npx vitest run                ← 단위 테스트
+4. npm run build (BASE_URL=/game_001/) ← 빌드
+5. actions/upload-pages-artifact@v3
+6. actions/deploy-pages@v4
+7. 배포 후 헬스체크              ← HTTP 200 확인 (최대 3회 재시도)
 → https://loganahn.github.io/game_001/
 ```

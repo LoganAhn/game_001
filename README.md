@@ -8,7 +8,7 @@
 
 > **[Play Now](https://loganahn.github.io/game_001/)** — 설치 없이 브라우저에서 즉시 플레이
 
-**테스트**: 82개 단위 테스트 + 3개 E2E 테스트 | **커버리지**: Stmts 78% / Lines 80% / Funcs 94% | **빌드**: gzip 18KB
+**테스트**: 82개 단위 테스트 + 7개 E2E 테스트 | **커버리지**: Stmts 78% / Lines 80% / Funcs 94% | **빌드**: gzip 18KB
 
 ---
 
@@ -94,6 +94,9 @@ src/
 - [PRD (제품 요구사항)](docs/prd.md)
 - [로드맵](docs/roadmap.md)
 - [프로젝트 기획서](docs/PROJECT_PLAN.md)
+- [의사결정 로그 (ADR)](docs/DECISION_LOG.md)
+- [테스트 전략](docs/test-strategy.md)
+- [테스트 실행 결과](docs/TEST_RESULTS.md)
 - [스프린트 문서](docs/sprint/)
 
 ## 개발 과정
