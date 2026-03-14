@@ -13,7 +13,7 @@ const alwaysCallProvider: ActionProvider = async (player, currentBet, minimumRai
 };
 
 /** 항상 폴드하는 AI (블라인드 제외) */
-const alwaysFoldProvider: ActionProvider = async (player, currentBet) => {
+const alwaysFoldProvider: ActionProvider = async (_player, currentBet) => {
   if (currentBet === 0) return { action: 'check', amount: 0 };
   return { action: 'fold', amount: 0 };
 };

@@ -3,10 +3,18 @@ import { GameEngine, ActionProvider } from './core/GameEngine';
 import { getAvailableActions } from './betting/BettingAction';
 import { ActionType } from './core/GameState';
 import { Player } from './core/Player';
+import { Renderer } from './ui/Renderer';
+
+// ─── Renderer ───
+const app = document.getElementById('app')!;
+const renderer = new Renderer(app);
+
+// ─── Game Engine reference ───
+let engine: GameEngine | null = null;
 
 /**
- * Sprint 2: 더미 AI — 랜덤 콜/폴드/체크
- * 모든 플레이어(인간 포함)를 자동으로 처리
+ * Sprint 3: 더미 AI 액션 프로바이더
+ * 모든 플레이어를 자동으로 처리 + UI 업데이트
  */
 const dummyActionProvider: ActionProvider = async (
   player: Player,
@@ -20,17 +28,15 @@ const dummyActionProvider: ActionProvider = async (
   let amount = 0;
 
   if (available.canCheck) {
-    // 체크 가능하면: 70% 체크, 20% 레이즈, 10% 폴드
     if (rand < 0.7) {
       action = 'check';
     } else if (rand < 0.9 && available.canRaise) {
       action = 'raise';
       amount = available.minRaise;
     } else {
-      action = 'check'; // 폴드 대신 체크
+      action = 'check';
     }
   } else if (available.canCall) {
-    // 콜해야 하는 상황: 60% 콜, 15% 레이즈, 25% 폴드
     if (rand < 0.6) {
       action = 'call';
       amount = available.callAmount;
@@ -41,7 +47,6 @@ const dummyActionProvider: ActionProvider = async (
       action = 'fold';
     }
   } else {
-    // 칩이 콜 금액보다 적으면 올인 또는 폴드
     if (rand < 0.5 && available.canAllIn) {
       action = 'allin';
       amount = available.allInAmount;
@@ -50,47 +55,53 @@ const dummyActionProvider: ActionProvider = async (
     }
   }
 
-  // AI 사고 딜레이 시뮬레이션 (짧게)
-  await new Promise(r => setTimeout(r, 10));
+  // UI에 액션 표시 + 렌더링
+  renderer.setPlayerAction(player.id, action);
+  if (engine) {
+    renderer.render(engine.getState());
+  }
+
+  // AI 사고 딜레이
+  await new Promise(r => setTimeout(r, 400));
 
   return { action, amount };
 };
 
-// --- 앱 시작 ---
-const app = document.getElementById('app')!;
+// ─── 게임 루프 ───
+async function gameLoop(): Promise<void> {
+  if (!engine) return;
 
-const heading = document.createElement('h1');
-heading.textContent = '♠ Texas Hold\'em Poker';
-heading.style.color = 'white';
-heading.style.fontFamily = 'monospace';
-heading.style.padding = '2rem';
+  while (!engine.getState().isGameOver) {
+    renderer.clearActions();
+    renderer.render(engine.getState());
 
-const info = document.createElement('p');
-info.textContent = 'Sprint 2 — 콘솔(F12)에서 AI끼리 자동 게임 진행을 확인하세요.';
-info.style.color = '#aaa';
-info.style.fontFamily = 'monospace';
-info.style.paddingLeft = '2rem';
+    const handNum = engine.getState().handNumber;
+    renderer.setMessage(`핸드 #${handNum + 1} 시작...`);
+    await new Promise(r => setTimeout(r, 600));
 
-const startBtn = document.createElement('button');
-startBtn.textContent = '🎮 게임 시작 (5핸드 자동 진행)';
-startBtn.style.cssText = 'margin-left:2rem;padding:0.8rem 1.5rem;font-size:1.1rem;cursor:pointer;background:#2d8a4e;color:white;border:none;border-radius:8px;font-family:monospace;';
+    await engine.playHands(1);
+    renderer.render(engine.getState());
 
-let running = false;
-startBtn.addEventListener('click', async () => {
-  if (running) return;
-  running = true;
-  startBtn.disabled = true;
-  startBtn.textContent = '⏳ 진행 중...';
+    const state = engine.getState();
+    if (state.isGameOver) {
+      const winner = state.players.find(p => !p.isEliminated);
+      renderer.setMessage(`\ud83c\udfc6 ${winner?.name ?? '???'} 최종 승리!`);
+      break;
+    }
 
-  const engine = new GameEngine(dummyActionProvider);
+    renderer.setMessage(`핸드 #${state.handNumber} 완료`);
+    await new Promise(r => setTimeout(r, 1500));
+  }
+}
 
-  console.log('\n=== Sprint 2: 자동 게임 데모 (5핸드) ===\n');
-  await engine.playHands(5);
-  console.log('\n=== 데모 완료 ===');
-  startBtn.textContent = '✅ 완료 — 콘솔 확인';
-  running = false;
+// ─── 앱 시작 ───
+renderer.showStartScreen(async () => {
+  engine = new GameEngine(dummyActionProvider);
+
+  renderer.initGameUI(engine.getState().players);
+  renderer.render(engine.getState());
+  renderer.setMessage('게임을 시작합니다...');
+
+  await new Promise(r => setTimeout(r, 800));
+  gameLoop();
 });
-
-app.appendChild(heading);
-app.appendChild(info);
-app.appendChild(startBtn);
