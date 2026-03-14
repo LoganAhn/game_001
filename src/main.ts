@@ -1,3 +1,24 @@
+/**
+ * main.ts — GameEngine ↔ UI ↔ AI ↔ Animation ↔ Sound 통합 엔트리포인트
+ *
+ * 아키텍처 흐름:
+ *   renderer.showStartScreen() → startNewGame()
+ *     → new GameEngine(actionProvider)    // ActionProvider 콜백 주입
+ *     → gameLoop()                        // 핸드 반복 루프
+ *         → engine.playHands(1)           // 1핸드 실행
+ *             → actionProvider(player)    // 각 플레이어 턴마다 호출
+ *                 ├─ Human: renderer.requestHumanAction() → Promise<BettingDecision>
+ *                 │   └─ BettingControls.show() → 버튼 클릭 시 resolve
+ *                 └─ AI: getAIAction(player, available, ...) → {action, amount}
+ *                     └─ PreFlopStrategy / PostFlopStrategy (성격 프로필 반영)
+ *             → playSoundForAction()      // 액션별 사운드
+ *             → renderer.render(state)    // UI 갱신
+ *         → showHandPopup() / showGameOverScreen()  // 결과 표시
+ *
+ * 핵심 패턴: ActionProvider가 GameEngine과 UI/AI를 디커플링.
+ * GameEngine은 "누가 결정하는지" 모르고, 콜백의 Promise만 await.
+ */
+
 import './style.css';
 import { GameEngine, ActionProvider } from './core/GameEngine';
 import { getAvailableActions } from './betting/BettingAction';
