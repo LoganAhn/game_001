@@ -6,6 +6,9 @@ import { Renderer } from './ui/Renderer';
 import { GAME_CONFIG } from './utils/Constants';
 import { getAIAction } from './ai/AIController';
 import { animationManager } from './animation/AnimationManager';
+import { soundManager } from './sound/SoundManager';
+import { playCardDeal, playChipBet, playCheck, playFold, playWin, playAllIn } from './sound/SoundEffects';
+import { showHandPopup } from './animation/WinEffects';
 
 // ─── Renderer ───
 const app = document.getElementById('app')!;
@@ -14,10 +17,21 @@ const renderer = new Renderer(app);
 // ─── Game Engine reference ───
 let engine: GameEngine | null = null;
 
+/** 액션에 맞는 사운드 재생 */
+function playSoundForAction(action: string): void {
+  switch (action) {
+    case 'fold': playFold(); break;
+    case 'check': playCheck(); break;
+    case 'call':
+    case 'raise': playChipBet(); break;
+    case 'allin': playAllIn(); break;
+  }
+}
+
 /**
  * 통합 액션 프로바이더:
  * - 인간(Player 0): 베팅 컨트롤 UI를 통해 입력 대기
- * - AI: 더미 AI (랜덤 콜/폴드/체크)
+ * - AI: 성격 프로필 기반 의사결정
  */
 const actionProvider: ActionProvider = async (
   player: Player,
@@ -36,6 +50,7 @@ const actionProvider: ActionProvider = async (
       engine?.getState().mainPot ?? 0
     );
 
+    playSoundForAction(decision.action);
     renderer.setPlayerAction(player.id, decision.action);
     if (engine) renderer.render(engine.getState());
     return decision;
@@ -65,6 +80,7 @@ const actionProvider: ActionProvider = async (
     state?.bigBlind ?? GAME_CONFIG.INITIAL_BIG_BLIND,
   );
 
+  playSoundForAction(aiDecision.action);
   renderer.setPlayerAction(player.id, aiDecision.action);
   if (engine) renderer.render(engine.getState());
 
@@ -81,14 +97,31 @@ async function gameLoop(): Promise<void> {
 
     const handNum = engine.getState().handNumber;
     renderer.setMessage(`핸드 #${handNum + 1} 시작...`);
-    await new Promise(r => setTimeout(r, 800));
+    playCardDeal();
+    await animationManager.delay(800);
 
     await engine.playHands(1);
     renderer.render(engine.getState());
 
     const state = engine.getState();
+
+    // 승리 효과
+    if (state.phase === 'hand_complete' || state.phase === 'showdown') {
+      const winner = state.players.find(p => !p.folded && !p.isEliminated);
+      if (winner) {
+        playWin();
+        await showHandPopup(
+          app,
+          `${winner.name} 승리!`,
+          winner.name,
+          state.mainPot > 0 ? state.mainPot : 0,
+        );
+      }
+    }
+
     if (state.isGameOver) {
       const winner = state.players.find(p => !p.isEliminated);
+      playWin();
       if (winner && !winner.isAI) {
         renderer.setMessage(`축하합니다! 최종 승리!`);
       } else {
@@ -111,12 +144,16 @@ async function gameLoop(): Promise<void> {
 
 // ─── 앱 시작 ───
 renderer.showStartScreen(async () => {
+  // 사운드 초기화 (사용자 인터랙션 후)
+  soundManager.init();
+  soundManager.resume();
+
   engine = new GameEngine(actionProvider);
 
   renderer.initGameUI(engine.getState().players);
   renderer.render(engine.getState());
   renderer.setMessage('게임을 시작합니다...');
 
-  await new Promise(r => setTimeout(r, 800));
+  await animationManager.delay(800);
   gameLoop();
 });
