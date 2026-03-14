@@ -1,8 +1,5 @@
 import { Card } from '../core/Card';
-
-export type GamePhase = 'waiting' | 'preflop' | 'flop' | 'turn' | 'river' | 'showdown' | 'hand_complete';
-
-export type ActionType = 'fold' | 'check' | 'call' | 'raise' | 'allin';
+import { GamePhase, ActionType } from '../core/GameState';
 
 export interface PlayerActionData {
   playerId: number;

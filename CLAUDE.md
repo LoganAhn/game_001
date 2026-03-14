@@ -7,6 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev` — Start Vite dev server (opens browser automatically)
 - `npm run build` — Type-check with tsc then build with Vite
 - `npx tsc --noEmit` — Type-check only (no output files)
+- `npm test` — Run all tests (vitest run)
+- `npm run test:watch` — Run tests in watch mode
 
 ## Architecture
 
